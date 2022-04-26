@@ -35,5 +35,15 @@ namespace Setlup.Models
         public int Status { get; set; }
 
 
+        //[BsonElement("SupplierId")]
+        //public string SupplierId { get; set; } = String.Empty;
+
+
+
+    }
+    public class MessageTextList
+    {
+        public string SupplierId { get; set; }
+        public List<MessageText> ObjmsgtextList { get; set; }
     }
 }
