@@ -36,6 +36,7 @@ namespace Setlup.Services
             //First Inserting the order in orders collection and then 
             var uid = cryptingData.Decrypt(userId);
             Objorder.CreatedBy = uid;
+            Objorder.CreatedDate = DateTime.Now;
             _orders.InsertOne(Objorder);
             MessageText Objmessagetext = new MessageText();
             Objmessagetext.CombinationId = Objorder.CombinationId;
@@ -43,7 +44,7 @@ namespace Setlup.Services
             Objmessagetext.Customer_or_Supplier = 1;
             Objmessagetext.MessageType = 2;
             Objmessagetext.OrderId = Objorder.OrderId;
-            Objmessagetext.CreatedUser = uid;
+            Objmessagetext.CreatedBy = uid;
             Objmessagetext.CreatedDate = DateTime.Now;
             Objmessagetext.Status = 1;
             _MessageText.InsertOne(Objmessagetext);
@@ -80,6 +81,7 @@ namespace Setlup.Services
             var update = Builders<Orders>.Update.Set(p => p.OrderStatus, objOrder.OrderStatus).Set(p => p.InvoiceDetails, objOrder.InvoiceDetails).Set(p => p.InvoiceStatus, objOrder
                 .InvoiceStatus);
             var options = new UpdateOptions { IsUpsert = true };
+           
             _orders.UpdateOne(updatefilter, update, options);
 
         }
@@ -116,7 +118,7 @@ namespace Setlup.Services
                 Objmessagetext.Customer_or_Supplier = 2;
                 Objmessagetext.MessageType = 3;
                 Objmessagetext.OrderId = objOrder.OrderId;
-                Objmessagetext.CreatedUser = uid;
+                Objmessagetext.CreatedBy = uid;
                 Objmessagetext.CreatedDate = DateTime.Now;
                 Objmessagetext.Status = 1;
                 _MessageText.InsertOne(Objmessagetext);
@@ -254,6 +256,7 @@ namespace Setlup.Services
                 var li = _Inventory.Find(filter).ToList();
                 objinventorylist.InvenotryItems = li;
                 return objinventorylist;
+                var a = 1;
             }catch (Exception ex)
             {
                 objinventorylist = null;

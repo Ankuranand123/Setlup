@@ -172,72 +172,86 @@ namespace Setlup.Services
 
         }
 
-        public void InsertCustomerSupplier(string userId, Users_CustomerSuppliers objCustomerSuppliers)
+        public string InsertCustomerSupplier(string userId, Users_CustomerSuppliers objCustomerSuppliers)
         {
 
+            try
+            {
 
-            //Decrypting to get user ID
-            var uid = cryptingData.Decrypt(userId);
-            FilterDefinition<userDetails> filterUserDetails = Builders<userDetails>.Filter.Where(x => x.userId == uid);
-            var liUserDetails = _userDetails.Find(filterUserDetails).ToList();
-            if(liUserDetails.Count == 0)
-            {
-                //user has not provided his basic details.User info does not exist in database
-            }
-            else
-            {
-                //User has provided info. User details is present in database...need to check whether he has provided both business role type and his details like name, pan etc
-                if(string.IsNullOrEmpty(liUserDetails[0].name) || string.IsNullOrEmpty(liUserDetails[0].businessId))
+
+                //Decrypting to get user ID
+                var uid = cryptingData.Decrypt(userId);
+                FilterDefinition<userDetails> filterUserDetails = Builders<userDetails>.Filter.Where(x => x.userId == uid);
+                var liUserDetails = _userDetails.Find(filterUserDetails).ToList();
+                if (liUserDetails.Count == 0)
                 {
-                    //either name or businessID is not provided..will not allow user to add C/S
+                    //user has not provided his basic details.User info does not exist in database
+                    return "Please provide your details";
                 }
                 else
                 {
-                    //all info exists...in this case only user can add C/S
-
-                    FilterDefinition<userMobileDetails> filter = Builders<userMobileDetails>.Filter.Eq(x => x.mobileNumber, objCustomerSuppliers.AddedUserPh);
-                    var li = _userMobileDetails.Find(filter).ToList();
-                    if (li.Count > 0)
+                    //User has provided info. User details is present in database...need to check whether he has provided both business role type and his details like name, pan etc
+                    if (string.IsNullOrEmpty(liUserDetails[0].name) || string.IsNullOrEmpty(liUserDetails[0].businessId))
                     {
-                        //if user which is getting added is registerd in Setlup  mobile no. is there in database and status can be anything
-                        objCustomerSuppliers.Customer_SupplierId = li[0].userId;
-                        objCustomerSuppliers.Status = li[0].status;
-                        objCustomerSuppliers.UserId = uid;
-                        //Unique combination of userId and Customer/Supplier should be there
-                        FilterDefinition<Users_CustomerSuppliers> CSfilter_UserId = Builders<Users_CustomerSuppliers>.Filter.Eq(x => x.UserId, uid);
-                        FilterDefinition<Users_CustomerSuppliers> CSfilter_CS_Id = Builders<Users_CustomerSuppliers>.Filter.Eq(x => x.Customer_SupplierId, objCustomerSuppliers.Customer_SupplierId);
-                        var record = _userCustomerSuppliers.Find(CSfilter_UserId & CSfilter_CS_Id).ToList();
-                        if (record.Count > 0)
-                        {
-                            // if the combination already exists , no need to insert
-                        }
-                        else
-                        {
-                            // if such combination does not exist
-                            _userCustomerSuppliers.InsertOne(objCustomerSuppliers);
-
-                        }
-
+                        //either name or businessID is not provided..will not allow user to add C/S
+                        return "Please provide your details";
                     }
                     else
                     {
-                        // if user which is getting added is not registered in Setlup ...mobile no. is not in database
-                        userMobileDetails objmobiledetails = new userMobileDetails();
-                        objmobiledetails.mobileNumber = objCustomerSuppliers.AddedUserPh;
-                        objmobiledetails.status = 0;
-                        objmobiledetails.CreatedDate = DateTime.Now;
-                        _userMobileDetails.InsertOne(objmobiledetails);
-                        objCustomerSuppliers.Customer_SupplierId = objmobiledetails.userId;
-                        objCustomerSuppliers.Status = objmobiledetails.status;
-                        objCustomerSuppliers.UserId = uid;
-                        _userCustomerSuppliers.InsertOne(objCustomerSuppliers);
+                        //all info exists...in this case only user can add C/S
+
+                        FilterDefinition<userMobileDetails> filter = Builders<userMobileDetails>.Filter.Eq(x => x.mobileNumber, objCustomerSuppliers.AddedUserPh);
+                        var li = _userMobileDetails.Find(filter).ToList();
+                        if (li.Count > 0)
+                        {
+                            //if user which is getting added is registerd in Setlup  mobile no. is there in database and status can be anything
+                            objCustomerSuppliers.Customer_SupplierId = li[0].userId;
+                            objCustomerSuppliers.Status = li[0].status;
+                            objCustomerSuppliers.UserId = uid;
+                            //Unique combination of userId and Customer/Supplier should be there
+                            FilterDefinition<Users_CustomerSuppliers> CSfilter_UserId = Builders<Users_CustomerSuppliers>.Filter.Eq(x => x.UserId, uid);
+                            FilterDefinition<Users_CustomerSuppliers> CSfilter_CS_Id = Builders<Users_CustomerSuppliers>.Filter.Eq(x => x.Customer_SupplierId, objCustomerSuppliers.Customer_SupplierId);
+                            var record = _userCustomerSuppliers.Find(CSfilter_UserId & CSfilter_CS_Id).ToList();
+                            if (record.Count > 0)
+                            {
+                                // if the combination already exists , no need to insert
+                                return "User already exists";
+                            }
+                            else
+                            {
+                                // if such combination does not exist
+                                _userCustomerSuppliers.InsertOne(objCustomerSuppliers);
+                                return "Inserted";
+
+                            }
+
+                        }
+                        else
+                        {
+                            // if user which is getting added is not registered in Setlup ...mobile no. is not in database
+                            userMobileDetails objmobiledetails = new userMobileDetails();
+                            objmobiledetails.mobileNumber = objCustomerSuppliers.AddedUserPh;
+                            objmobiledetails.status = 0;
+                            objmobiledetails.CreatedDate = DateTime.Now;
+                            _userMobileDetails.InsertOne(objmobiledetails);
+                            objCustomerSuppliers.Customer_SupplierId = objmobiledetails.userId;
+                            objCustomerSuppliers.Status = objmobiledetails.status;
+                            objCustomerSuppliers.UserId = uid;
+                            _userCustomerSuppliers.InsertOne(objCustomerSuppliers);
+                            return "Inserted";
+                        }
+
+
+
                     }
 
 
-
                 }
-
-
+            }
+            catch (Exception ex)
+            {
+                string ret = "Exception";
+                    return ret;
             }
 
 

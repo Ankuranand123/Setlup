@@ -1,0 +1,21 @@
+
+{
+    "region" : "ap-south-1",
+    "configuration" : "Release",
+    "framework"     : "net6.0",
+    "self-contained" : true,
+    "application"    : "Setlup",
+    "environment"    : "Setlup-dev",
+    "app-path"       : "/",
+    "iis-website"    : "Default Web Site",
+    "enable-xray"    : false,
+    "enhanced-health-type" : "basic",
+    "additional-options"   : "",
+    "solution-stack"       : "64bit Windows Server 2019 v2.9.0 running IIS 10.0",
+    "environment-type"     : "SingleInstance",
+    "cname"                : "setlup-dev",
+    "instance-type"        : "t2.micro",
+    "key-pair"             : "setleup",
+    "instance-profile"     : "aws-elasticbeanstalk-ec2-role",
+    "service-role"         : "aws-elasticbeanstalk-service-role"
+}

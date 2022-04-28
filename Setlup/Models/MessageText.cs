@@ -21,10 +21,10 @@ namespace Setlup.Models
 
         [BsonElement("OrderId"), BsonRepresentation(BsonType.ObjectId)]
         public string OrderId { get; set; } = String.Empty;
-        [BsonElement("CreatedBy")]
+        [BsonElement("CreatedBy"), BsonRepresentation(BsonType.ObjectId)]
         public string CreatedBy { get; set; } = String.Empty;
-        [BsonElement("CreatedUser"), BsonRepresentation(BsonType.ObjectId)]
-        public string CreatedUser { get; set; } = String.Empty;
+        //[BsonElement("CreatedUser"), BsonRepresentation(BsonType.ObjectId)]
+        //public string CreatedUser { get; set; } = String.Empty;
 
 
         [BsonElement("CreatedDate")]

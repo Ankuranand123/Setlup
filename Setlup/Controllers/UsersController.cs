@@ -25,6 +25,7 @@ namespace Setlup.Controllers
         //{
         //   var s1 =  _usersAddService.InsertUser(mobileDetails);
         //    return s1;
+        //This is commented
 
         //}
 
@@ -69,6 +70,7 @@ namespace Setlup.Controllers
             try
             {
                 string s1 = _usersAddService.InsertUserBusinessTypeDetails(userId, userDetails);
+                string s2 = "";
                 if(s1=="Exception")
                 {
                     return BadRequest();
@@ -137,9 +139,25 @@ namespace Setlup.Controllers
 
         [HttpPost]
         [Route("InsertCustomerSupplier")]
-        public void InsertCustomerSupplier([FromHeader] string userId, [FromBody] Users_CustomerSuppliers objCustomerSuppliers)
+        public IActionResult InsertCustomerSupplier([FromHeader] string userId, [FromBody] Users_CustomerSuppliers objCustomerSuppliers)
         {
-            _usersAddService.InsertCustomerSupplier(userId, objCustomerSuppliers);
+            try
+            {
+
+                var s1 = _usersAddService.InsertCustomerSupplier(userId, objCustomerSuppliers);
+                if(s1 == "Exception")
+                {
+
+                    return BadRequest();
+                }else
+                {
+                    return Ok(s1);
+                }
+               
+            }catch (Exception ex)
+            {
+                return BadRequest();
+            }
             // return s1;
 
         }

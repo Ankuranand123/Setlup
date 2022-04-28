@@ -12,7 +12,7 @@ namespace Setlup.Services
 
         string InserUserDetails(string userId,userDetails userDetails);
 
-        void InsertCustomerSupplier(string userId, Users_CustomerSuppliers objCustomerSuppliers);
+        string InsertCustomerSupplier(string userId, Users_CustomerSuppliers objCustomerSuppliers);
 
         userDetails GetUserDetails(string Userid);
 

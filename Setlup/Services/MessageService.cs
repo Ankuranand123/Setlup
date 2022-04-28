@@ -50,5 +50,36 @@ namespace Setlup.Services
             _MessageText.InsertOne(ObjMessageText);
 
         }
+
+        public MessageTextList GetChat(string UserId,string CombinationId)
+        {
+            MessageTextList ObjMessageTextList = new MessageTextList();
+            ObjMessageTextList.SupplierId =  GetSupplierIdFromCombinationId(CombinationId);
+
+            var filter = Builders<MessageText>.Filter.Where(x => x.CombinationId == CombinationId && x.Status == 1);
+           ObjMessageTextList.ObjmsgtextList = (List<MessageText>)_MessageText.Find(filter).ToList().OrderByDescending(c=>c.CreatedDate);
+            return ObjMessageTextList;
+
+
+        }
+
+        public string GetSupplierIdFromCombinationId(string CombinationId)
+        {
+            string SupplierId = "";
+            var filter = Builders<Users_CustomerSuppliers>.Filter.Where(x => x.CustomerSuppliersId == CombinationId);
+            var ObjRecord = _userCustomerSuppliers.Find(filter).FirstOrDefault();
+            if (ObjRecord != null)
+            {
+                if (ObjRecord.Customer_or_Supplier == 2)
+                {
+                    SupplierId = ObjRecord.Customer_SupplierId;
+                }
+                else
+                {
+                    SupplierId = ObjRecord.UserId;
+                }
+            }
+            return SupplierId;
+        }
     }
 }
