@@ -164,10 +164,25 @@ namespace Setlup.Controllers
 
         [HttpGet]
         [Route("GetUserDetails")]
-        public userDetails GetUserDetails([FromHeader] string userId)
+        public IActionResult GetUserDetails([FromHeader] string userId)
         {
+            try
+            {
 
-          return  _usersAddService.GetUserDetails(userId);
+                var obj =  _usersAddService.GetUserDetails(userId);
+                if(obj == null)
+                {
+                    return BadRequest();
+                }
+                else
+                {
+                    return Ok(obj);
+                }
+            }
+            catch(Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
         [HttpGet]

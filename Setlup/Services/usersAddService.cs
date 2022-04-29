@@ -151,7 +151,8 @@ namespace Setlup.Services
                     FilterDefinition<userDetails> updatefilter = Builders<userDetails>.Filter.Eq(x => x.userId, uid);
                     var update = Builders<userDetails>.Update
                         .Set(p => p.address, userDetails.address).Set(p => p.name, userDetails.name).Set(p => p.email, userDetails.email)
-                        .Set(p => p.designation, userDetails.designation).Set(p => p.panNumber, userDetails.panNumber).Set(p => p.brandDeals, userDetails.brandDeals);
+                        .Set(p => p.designation, userDetails.designation).Set(p => p.panNumber, userDetails.panNumber).Set(p => p.brandDeals, userDetails.brandDeals)
+                        .Set(p=>p.businessId,userDetails.businessId);
                     var options = new UpdateOptions { IsUpsert = true };
                     _userDetails.UpdateOne(updatefilter, update, options);
 
@@ -344,10 +345,19 @@ namespace Setlup.Services
 
         public userDetails GetUserDetails(string Userid)
         {
-            var uid = cryptingData.Decrypt(Userid);
-            FilterDefinition<userDetails> filter = Builders<userDetails>.Filter.Where(x => x.userId == uid);
-          userDetails UserDetails =   _userDetails.Find(filter).FirstOrDefault();
-            return UserDetails;
+            try
+            {
+                var uid = cryptingData.Decrypt(Userid);
+                FilterDefinition<userDetails> filter = Builders<userDetails>.Filter.Where(x => x.userId == uid);
+                userDetails UserDetails = _userDetails.Find(filter).FirstOrDefault();
+                return UserDetails;
+            }
+            catch(Exception ex)
+            {
+                userDetails Objud = new userDetails();
+                Objud = null;
+                return Objud;
+            }
 
         }
 
