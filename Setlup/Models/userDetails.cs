@@ -28,6 +28,11 @@ namespace Setlup.Models
         [BsonElement("address")]
         public string address { get; set; } = String.Empty;
 
+        [BsonElement("State")]
+        public string State { get; set; } = String.Empty;
+        [BsonElement("MobileNo")]
+        public string MobileNo { get; set; } = String.Empty;
+
         [BsonElement("CreatedDate")]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime CreatedDate { get; set; }

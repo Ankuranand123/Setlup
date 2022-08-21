@@ -36,7 +36,7 @@ namespace Setlup.Controllers
             try
             {
                 var s1 = _usersAddService.InsertUser(mobileDetails);
-                if(s1 == "Exception")
+                if(s1 == null)
                 {
                     return BadRequest();
                 }
@@ -187,10 +187,18 @@ namespace Setlup.Controllers
 
         [HttpGet]
         [Route("GetCustomersSuppliersList")]
-        public Customer_SuppliersList GetCustomersSuppliersList([FromHeader] string userId)
+        public IActionResult GetCustomersSuppliersList([FromHeader] string userId)
         {
-
-            return _usersAddService.GetCustomerSuppliers(userId);
+            try
+            {
+                var Obj =  _usersAddService.GetCustomerSuppliers(userId);
+                return Ok(Obj);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest();
+            }
+           
         }
 
         //[HttpGet]
@@ -220,10 +228,62 @@ namespace Setlup.Controllers
                
             }catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest("Error");
             }
         }
 
+
+        [HttpPost]
+        [Route("InsertStates")]
+        public IActionResult InsertStates( [FromBody] States_list ObjStates)
+        {
+            try
+            {
+
+                var s1 = _usersAddService.InsertStates(ObjStates);
+                if (s1 == "Exception")
+                {
+
+                    return BadRequest();
+                }
+                else
+                {
+                    return Ok(s1);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
+            // return s1;
+
+        }
+
+
+        [HttpGet]
+        [Route("GetStatesList")]
+        public IActionResult GetStatesList()
+        {
+            try
+            {
+                var s1 = _usersAddService.GetStatesList();
+                if (s1 == null)
+                {
+                    return BadRequest();
+                }
+                else
+                {
+                    return Ok(s1);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error");
+            }
+        }
 
 
     }

@@ -4,7 +4,7 @@ namespace Setlup.Services
 {
     public interface IusersAddService
     {
-        string InsertUser(userMobileDetails mobileDetails);
+        UserRetDetails InsertUser(userMobileDetails mobileDetails);
 
         string InsertUserBusinessTypeDetails(string userId,userDetails userDetails);
 
@@ -19,5 +19,9 @@ namespace Setlup.Services
         Customer_SuppliersList GetCustomerSuppliers(string userId);
 
         BusinessTypeDetails GetBusinessType();
+
+        string InsertStates(States_list ObjStates);
+
+        States_list GetStatesList();
     }
 }

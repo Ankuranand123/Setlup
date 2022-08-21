@@ -18,9 +18,23 @@ namespace Setlup.Controllers
 
         [HttpPost]
         [Route("InsertOrders")]
-        public void InsertOrders([FromHeader]string userId, Orders Objorder)
+        public IActionResult InsertOrders([FromHeader]string userId, Orders Objorder)
         {
-            _usersOrderService.InsertOrders(userId, Objorder);
+            try
+            {
+                var str = _usersOrderService.InsertOrders(userId, Objorder);
+                if (str == "Inserted")
+                {
+                    return Ok(str);
+                }
+                else
+                {
+                    return BadRequest(str);
+                }
+            }catch (Exception ex)
+            {
+                return BadRequest("Exception");
+            }
         }
 
         [HttpPost]
@@ -115,6 +129,100 @@ namespace Setlup.Controllers
             }
 
 
+        }
+
+        [HttpPost]
+        [Route("UpdateOrder")]
+        public IActionResult UpdateOrder([FromHeader] string userId, Orders Objorder)
+        {
+            try
+            {
+                var str = _usersOrderService.UpdateOrder(userId, Objorder);
+                if (str == "Updated")
+                {
+                    return Ok(str);
+                }
+                else
+                {
+                    return BadRequest(str);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Exception");
+            }
+        }
+
+
+        [HttpPost]
+        [Route("UpdateOrderStatus")]
+        public IActionResult UpdateOrderStatus([FromHeader] string userId, Orders Objorder)
+        {
+            try
+            {
+                var str = _usersOrderService.UpdateOrderStatus(userId, Objorder);
+               // if (str == "Inserted")
+               // {
+                    return Ok(str);
+              //  }
+             //   else
+             //   {
+                //    return BadRequest(str);
+             //   }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Exception");
+            }
+        }
+
+
+        [HttpGet]
+        [Route("GetInvoiceFormat")]
+        public IActionResult GetInvoiceFormat([FromHeader] string userId, string OrderId, int OrderStatus)
+        {
+
+            try
+            {
+                var obj = _usersOrderService.GetInvoiceFormat(userId, OrderId, OrderStatus);
+                if (obj != null)
+                {
+                    return Ok(obj);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
+
+
+        }
+
+        [HttpPost]
+        [Route("UpdateOrderStatusWithInvoice")]
+        public IActionResult UpdateOrderStatusWithInvoice([FromHeader] string userId, Orders Objorder)
+        {
+            try
+            {
+                var str = _usersOrderService.UpdateOrderStatusWithInvoice(userId, Objorder);
+                if (str == "Updated")
+                {
+                    return Ok(str);
+                }
+                else
+                {
+                    return BadRequest(str);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Exception");
+            }
         }
 
 

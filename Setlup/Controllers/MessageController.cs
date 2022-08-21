@@ -20,9 +20,66 @@ namespace Setlup.Controllers
 
         [HttpPost]
         [Route("InsertMessage")]
-        public void InsertMessage([FromHeader] string userId, MessageText ObjMessageText)
+        public IActionResult InsertMessage([FromHeader] string userId, MessageText ObjMessageText)
         {
-            _messageService.InsertTextMessage(userId, ObjMessageText);
+            try
+            {
+
+             var str =  _messageService.InsertTextMessage(userId, ObjMessageText);
+                if(str == "Exception")
+                {
+                    return BadRequest("");
+                }
+                else
+                {
+                    return Ok("Inserted");
+                }
+            }catch (Exception ex)
+            {
+                return BadRequest("");
+            }
+        }
+
+
+        [HttpGet]
+        [Route("GetChat")]
+        public IActionResult GetChat([FromHeader] string userId, string CombinationId, int PageIndex)
+        {
+            try
+            {
+                var Obj = _messageService.GetChat(userId, CombinationId, PageIndex);
+                if(Obj == null)
+                {
+                    return BadRequest("Error");
+                }else
+                return Ok(Obj);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Exception");
+            }
+
+        }
+
+        [HttpGet]
+        [Route("GetRequiredIds")]
+        public IActionResult GetRequiredIds([FromHeader] string userId, string CombinationId)
+        {
+            try
+            {
+                var Obj = _messageService.GetRequiredIds(userId, CombinationId);
+                if (Obj == null)
+                {
+                    return BadRequest("Error");
+                }
+                else
+                    return Ok(Obj);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Exception");
+            }
+
         }
     }
 }

@@ -16,6 +16,9 @@
         public string InventoryCollectionName { get; set; } = String.Empty;
 
         public string BusinessMasterCollectionName { get; set; } = String.Empty;
+        public string StatesCollectionName { get; set; } = String.Empty;
+
+        public string InvoiceCollectionName { get; set; } = String.Empty;
 
     }
 }

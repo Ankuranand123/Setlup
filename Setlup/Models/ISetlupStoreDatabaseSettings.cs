@@ -17,5 +17,9 @@
 
         string BusinessMasterCollectionName { get; set; }
 
+        string StatesCollectionName { get; set; } 
+
+        string InvoiceCollectionName { get; set; }
+
     }
 }

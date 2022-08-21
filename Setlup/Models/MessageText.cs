@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Setlup.Models
 {
+    [BsonIgnoreExtraElements]
     public class MessageText
     {
         [BsonId]
@@ -34,16 +35,52 @@ namespace Setlup.Models
         [BsonElement("Status")]
         public int Status { get; set; }
 
+        [BsonIgnore]
+        public Items[]? ItemList { get; set; } 
+
+        [BsonIgnore]
+        public int OrderStatus { get; set; }
+
+        [BsonIgnore]
+        public string InvoiceNo { get; set; } = String.Empty;
+
+        [BsonIgnore]
+        public int ItemsCount { get; set; }
+
+        [BsonIgnore]
+        public int IsTax { get; set; }
+
+        [BsonIgnore]
+        public int IsDues { get; set; }
+
+        [BsonIgnore]
+        public int Amount { get; set; }
+
+        [BsonElement("InvoiceDate")]
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        public DateTime InvoiceDate { get; set; }
+
+        [BsonIgnore]
+        public int IsDue { get; set; }
+
 
         //[BsonElement("SupplierId")]
         //public string SupplierId { get; set; } = String.Empty;
 
-
+        // 1 :Simple message, 2: order placed, 3: order updated, 4 : order accepted(invoice)
 
     }
     public class MessageTextList
     {
-        public string SupplierId { get; set; }
+        //public string SupplierId { get; set; }
+
+        //public string CustomerId { get; set; }
+        //public string CombinationId { get; set; }
         public List<MessageText> ObjmsgtextList { get; set; }
     }
+
+    //public class ItemList
+    //{
+
+    //}
 }

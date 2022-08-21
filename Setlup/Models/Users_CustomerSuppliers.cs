@@ -7,14 +7,14 @@ namespace Setlup.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string CustomerSuppliersId { get; set; } = String.Empty;
+        public string CustomerSuppliersId { get; set; } = String.Empty;  // combinationId
 
         [BsonElement("UserId"), BsonRepresentation(BsonType.ObjectId)]
         public string UserId { get; set; } = String.Empty;
         [BsonElement("AddedUserPhNo")]
         public string AddedUserPh { get; set; } = String.Empty;
         [BsonElement("Customer_SupplierId"), BsonRepresentation(BsonType.ObjectId)]
-        public string Customer_SupplierId { get; set; } = String.Empty;
+        public string Customer_SupplierId { get; set; } = String.Empty;   //Added Customer or SupplierId
 
         //[BsonElement("BusinessTypeId"), BsonRepresentation(BsonType.ObjectId)]
         //public string BusinessTypeId { get; set; } = String.Empty;

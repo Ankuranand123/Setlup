@@ -13,6 +13,7 @@ namespace Setlup.Services
         private readonly IMongoCollection<userDetails> _userDetails;
         private readonly IMongoCollection<Users_CustomerSuppliers> _userCustomerSuppliers;
         private readonly IMongoCollection<BusinessDetailsList> _businessType;
+        private readonly IMongoCollection<States> _states;
         //private readonly IMongoDatabase _database;
 
         public usersAddService(ISetlupStoreDatabaseSettings settings, IMongoClient mongoClient)
@@ -22,14 +23,17 @@ namespace Setlup.Services
             _userDetails = database.GetCollection<userDetails>(settings.userDetailsCollectionName);
             _userCustomerSuppliers = database.GetCollection<Users_CustomerSuppliers>(settings.UserCustomerSuppliersCollectionName);
             _businessType = database.GetCollection<BusinessDetailsList>(settings.BusinessMasterCollectionName);
+            _states = database.GetCollection<States>(settings.StatesCollectionName);
         }
 
         private static TimeZoneInfo INDIAN_ZONE = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
 
-        public string InsertUser(userMobileDetails mobileDetails)
+        public UserRetDetails InsertUser(userMobileDetails mobileDetails)
         {
+            UserRetDetails userRetDetails = new UserRetDetails();
             try
             {
+                
                 //Check if the user which is signing in already exists in database
                 FilterDefinition<userMobileDetails> filter = Builders<userMobileDetails>.Filter.Where(x => x.mobileNumber == mobileDetails.mobileNumber);
                 var li = _userMobileDetails.Find(filter).ToList();
@@ -49,7 +53,10 @@ namespace Setlup.Services
                         var options1 = new UpdateOptions { IsUpsert = true };
                         _userCustomerSuppliers.UpdateOne(filter1, update1, options1);
                         string s1 = cryptingData.Encrypt(li[0].userId);
-                        return s1;
+                        userRetDetails.EncodedUserId = s1;
+                        userRetDetails.MobileNo = mobileDetails.mobileNumber;
+                        userRetDetails.UserId = mobileDetails.userId;
+                        return userRetDetails;
 
 
                     }
@@ -57,7 +64,10 @@ namespace Setlup.Services
                     {
                         //Status = 1
                         string s1 = cryptingData.Encrypt(li[0].userId);
-                        return s1;
+                        userRetDetails.EncodedUserId = s1;
+                        userRetDetails.MobileNo = mobileDetails.mobileNumber;
+                        userRetDetails.UserId = mobileDetails.userId;
+                        return userRetDetails;
                     }
 
                 }
@@ -72,13 +82,16 @@ namespace Setlup.Services
                     _userMobileDetails.InsertOne(mobileDetails);
                     var id = mobileDetails.userId;
                     string s1 = cryptingData.Encrypt(id);
-                    return s1;
+                    userRetDetails.EncodedUserId = s1;
+                    userRetDetails.MobileNo = mobileDetails.mobileNumber;
+                    return userRetDetails;
                 }
             }
             catch(Exception ex)
             {
+                userRetDetails = null;
                 String str = "Exception";
-                return str;
+                return userRetDetails;
             }
         }
 
@@ -152,7 +165,7 @@ namespace Setlup.Services
                     var update = Builders<userDetails>.Update
                         .Set(p => p.address, userDetails.address).Set(p => p.name, userDetails.name).Set(p => p.email, userDetails.email)
                         .Set(p => p.designation, userDetails.designation).Set(p => p.panNumber, userDetails.panNumber).Set(p => p.brandDeals, userDetails.brandDeals)
-                        .Set(p=>p.businessId,userDetails.businessId);
+                        .Set(p=>p.businessId,userDetails.businessId).Set(p=>p.State,userDetails.State);
                     var options = new UpdateOptions { IsUpsert = true };
                     _userDetails.UpdateOne(updatefilter, update, options);
 
@@ -210,13 +223,14 @@ namespace Setlup.Services
                             objCustomerSuppliers.Status = li[0].status;
                             objCustomerSuppliers.UserId = uid;
                             //Unique combination of userId and Customer/Supplier should be there
-                            FilterDefinition<Users_CustomerSuppliers> CSfilter_UserId = Builders<Users_CustomerSuppliers>.Filter.Eq(x => x.UserId, uid);
-                            FilterDefinition<Users_CustomerSuppliers> CSfilter_CS_Id = Builders<Users_CustomerSuppliers>.Filter.Eq(x => x.Customer_SupplierId, objCustomerSuppliers.Customer_SupplierId);
-                            var record = _userCustomerSuppliers.Find(CSfilter_UserId & CSfilter_CS_Id).ToList();
+                            //FilterDefinition<Users_CustomerSuppliers> CSfilter_UserId = Builders<Users_CustomerSuppliers>.Filter.Eq(x => x.UserId, uid);
+                            //FilterDefinition<Users_CustomerSuppliers> CSfilter_CS_Id = Builders<Users_CustomerSuppliers>.Filter.Eq(x => x.Customer_SupplierId, objCustomerSuppliers.Customer_SupplierId);
+                            //var record = _userCustomerSuppliers.Find(CSfilter_UserId & CSfilter_CS_Id).ToList();
+                           var record =  CheckCombination(uid, objCustomerSuppliers.Customer_SupplierId);
                             if (record.Count > 0)
                             {
                                 // if the combination already exists , no need to insert
-                                return "User already exists";
+                                return "Combination already exists";
                             }
                             else
                             {
@@ -259,87 +273,130 @@ namespace Setlup.Services
 
 
         }
+        public List<Users_CustomerSuppliers> CheckCombination(string uid,string AddedUserId)
+        {
+
+            FilterDefinition<Users_CustomerSuppliers> CSfilter_UserId = Builders<Users_CustomerSuppliers>.Filter.Eq(x => x.UserId, uid);
+            FilterDefinition<Users_CustomerSuppliers> CSfilter_CS_Id = Builders<Users_CustomerSuppliers>.Filter.Eq(x => x.Customer_SupplierId, AddedUserId);
+            var record = _userCustomerSuppliers.Find(CSfilter_UserId & CSfilter_CS_Id).ToList();
+            if(record.Count == 0)
+            {
+                FilterDefinition<Users_CustomerSuppliers> filter1 = Builders<Users_CustomerSuppliers>.Filter.Eq(x => x.UserId, AddedUserId);
+                FilterDefinition<Users_CustomerSuppliers> filter2 = Builders<Users_CustomerSuppliers>.Filter.Eq(x => x.Customer_SupplierId, uid);
+                var record1 = _userCustomerSuppliers.Find(CSfilter_UserId & CSfilter_CS_Id).ToList();
+                return record1;
+
+            }
+            else
+            {
+                return record;
+            }
+
+         
+
+        }
 
         public Customer_SuppliersList GetCustomerSuppliers(string userId)
         {
-            var uid = cryptingData.Decrypt(userId);
-            Customer_SuppliersList CSList = new Customer_SuppliersList();
-
-            //Find all the records in Customer Suppliers collection where uid is present either in UserId or Customer_SupplierId
-            var filter = Builders<Users_CustomerSuppliers>.Filter.Where(x=>x.UserId == uid || x.Customer_SupplierId == uid);
-
-            var allRecords = _userCustomerSuppliers.Find(filter).ToList();
-
-            //where uid is present in UserId column--->uid has customers / Suppliers
-           var CustomersList_1 =  allRecords.Where(x=>x.UserId == uid && x.Customer_or_Supplier == 1); // to get customers  CustomerID
-
-            var SuppliersList_1 = allRecords.Where(x => x.UserId == uid && x.Customer_or_Supplier == 2); // to get Suppliers SupplierID
-
-            //where uid is present in CustomerSupplierId  column ----> some other user has added uid either as Customer/Supplier
-
-            var SuppliersList_2 =    allRecords.Where(x => x.Customer_SupplierId == uid && x.Customer_or_Supplier == 1); // to get Suppliers CustomerID
-
-            var CustomersList_2 = allRecords.Where(x => x.Customer_SupplierId == uid && x.Customer_or_Supplier == 2); // to get Customers SupplierID
-
-            List<Customers> CustomersList = new List<Customers>();
-
-            foreach(var customer in CustomersList_1)
+            try
             {
-                Customers c1 = new Customers();
-                c1.ObjUniqueId = customer.CustomerSuppliersId;
-                c1.CustomerName = customer.AddedUserName;
-                c1.Status = 1;
-                c1.AccountStatus = customer.Status;
-                CustomersList.Add(c1);
-             
-            }
-            foreach(var customer in CustomersList_2)
+                var uid = cryptingData.Decrypt(userId);
+                Customer_SuppliersList CSList = new Customer_SuppliersList();
+
+                //Find all the records in Customer Suppliers collection where uid is present either in UserId or Customer_SupplierId
+                var filter = Builders<Users_CustomerSuppliers>.Filter.Where(x => x.UserId == uid || x.Customer_SupplierId == uid);
+
+                var allRecords = _userCustomerSuppliers.Find(filter).ToList();
+
+                //where uid is present in UserId column--->uid has customers / Suppliers
+                var CustomersList_1 = allRecords.Where(x => x.UserId == uid && x.Customer_or_Supplier == 1); // to get customers  CustomerID
+
+                var SuppliersList_1 = allRecords.Where(x => x.UserId == uid && x.Customer_or_Supplier == 2); // to get Suppliers SupplierID
+
+                //where uid is present in CustomerSupplierId  column ----> some other user has added uid either as Customer/Supplier
+
+                var SuppliersList_2 = allRecords.Where(x => x.Customer_SupplierId == uid && x.Customer_or_Supplier == 1); // to get Suppliers CustomerID
+
+                var CustomersList_2 = allRecords.Where(x => x.Customer_SupplierId == uid && x.Customer_or_Supplier == 2); // to get Customers SupplierID
+
+                List<Customers> CustomersList = new List<Customers>();
+
+                foreach (var customer in CustomersList_1)
+                {
+                    Customers c1 = new Customers();
+                    c1.ObjUniqueId = customer.CustomerSuppliersId;
+                    c1.CustomerName = customer.AddedUserName;
+                    c1.Status = 1;
+                    c1.AccountStatus = customer.Status;
+
+                    c1.Amount = 100;
+                    c1.DueorAdvance = 1;
+                    CustomersList.Add(c1);
+
+                }
+                foreach (var customer in CustomersList_2)
+                {
+
+                    Customers c2 = new Customers();
+                    c2.ObjUniqueId = customer.CustomerSuppliersId;
+                    c2.Status = 1;
+                    c2.AccountStatus = customer.Status;
+
+                    c2.Amount = 100;
+                    c2.DueorAdvance = 1;
+
+                    var filter1 = Builders<userDetails>.Filter.Where(x => x.userId == customer.UserId);
+                    c2.CustomerName = _userDetails.Find(filter1).FirstOrDefault().name;
+                    CustomersList.Add(c2);
+
+
+                }
+
+                List<Suppliers> SuppliersList = new List<Suppliers>();
+
+                foreach (var supplier in SuppliersList_1)
+                {
+                    Suppliers s1 = new Suppliers();
+                    s1.ObjUniqueId = supplier.CustomerSuppliersId;
+                    s1.SupplierName = supplier.AddedUserName;
+                    s1.Status = 2;
+                    s1.AccountStatus = supplier.Status;
+
+                    s1.Amount = 100;
+                    s1.DueorAdvance = 1;
+                    SuppliersList.Add(s1);
+
+                }
+
+                foreach (var supplier in SuppliersList_2)
+                {
+                    Suppliers s2 = new Suppliers();
+                    s2.ObjUniqueId = supplier.CustomerSuppliersId;
+                    s2.Status = 2;
+                    s2.AccountStatus = supplier.Status;
+
+                    s2.Amount = 100;
+                    s2.DueorAdvance = 1;
+
+                    var filter1 = Builders<userDetails>.Filter.Where(x => x.userId == supplier.UserId);
+                    s2.SupplierName = _userDetails.Find(filter1).FirstOrDefault().name;
+                    SuppliersList.Add(s2);
+
+
+                }
+
+                CSList.CustomersList = CustomersList;
+                CSList.SuppliersList = SuppliersList;
+
+
+
+                return CSList;
+            }catch(Exception ex)
             {
-
-                Customers c2 = new Customers();
-                c2.ObjUniqueId = customer.CustomerSuppliersId;
-                c2.Status = 1;
-                c2.AccountStatus = customer.Status;
-
-                var filter1 = Builders<userDetails>.Filter.Where(x => x.userId == customer.UserId);
-                c2.CustomerName = _userDetails.Find(filter1).FirstOrDefault().name;
-                CustomersList.Add(c2);
-
-
+                Customer_SuppliersList obj = new Customer_SuppliersList();
+                obj = null;
+                return obj;
             }
-
-            List<Suppliers> SuppliersList = new List<Suppliers>();
-
-            foreach(var supplier in SuppliersList_1)
-            {
-                Suppliers s1 = new Suppliers();
-                s1.ObjUniqueId = supplier.CustomerSuppliersId;
-                s1.SupplierName = supplier.AddedUserName;
-                s1.Status = 2;
-                s1.AccountStatus = supplier.Status;
-                SuppliersList.Add(s1);
-
-            }
-
-            foreach(var supplier in SuppliersList_2)
-            {
-                Suppliers s2 = new Suppliers();
-                s2.ObjUniqueId = supplier.CustomerSuppliersId;
-                s2.Status = 2;
-                s2.AccountStatus = supplier.Status;
-                var filter1 = Builders<userDetails>.Filter.Where(x => x.userId == supplier.UserId);
-                s2.SupplierName = _userDetails.Find(filter1).FirstOrDefault().name;
-                SuppliersList.Add(s2);
-
-
-            }
-
-            CSList.CustomersList = CustomersList;
-            CSList.SuppliersList = SuppliersList;
-
-
-
-            return CSList;
 
         }
 
@@ -350,6 +407,7 @@ namespace Setlup.Services
                 var uid = cryptingData.Decrypt(Userid);
                 FilterDefinition<userDetails> filter = Builders<userDetails>.Filter.Where(x => x.userId == uid);
                 userDetails UserDetails = _userDetails.Find(filter).FirstOrDefault();
+               // UserDetails.CreatedDate = UserDetails.CreatedDate.ToLocalTime();
                 return UserDetails;
             }
             catch(Exception ex)
@@ -378,6 +436,20 @@ namespace Setlup.Services
             }
 
 
+        }
+
+        public string InsertStates(States_list ObjStates)
+        {
+            _states.InsertMany(ObjStates.StatesList);
+
+            return "sd";
+        }
+
+        public States_list GetStatesList()
+        {
+            States_list Sl = new States_list();
+            Sl.StatesList = _states.Find(_ => true).ToList();
+            return Sl;
         }
     }
 }

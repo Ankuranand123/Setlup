@@ -4,13 +4,13 @@ namespace Setlup.Services
 {
     public interface IOrderService
     {
-        void InsertOrders(string userId,Orders Objorder);
+        string InsertOrders(string userId,Orders Objorder);
 
         string InsertInventory (string userId,InventoryList Objinventorylist);
 
-        void UpdateOrder(string userId, Orders Objorder);
+        string UpdateOrder(string userId, Orders Objorder);
 
-        void UpdateOrderStatus(string userId, Orders ObjOrder);
+        string UpdateOrderStatus(string userId, Orders ObjOrder);
 
         InventoryList GetInventoryList(string UserId);
 
@@ -19,5 +19,10 @@ namespace Setlup.Services
         string getItems(string str);
 
         InventoryList GetSearchItems(string UserId, string SupplierId, string SearchValue);
+
+        
+         Orders GetInvoiceFormat(string UserId, string OrderId, int OrderStatus);
+
+        string UpdateOrderStatusWithInvoice(string UserId, Orders objOrder);
     }
 }
